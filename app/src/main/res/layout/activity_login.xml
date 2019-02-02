@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimaryDark"
+    tools:context=".activity.LoginActivity">
+
+    <!--app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--android:layout_marginRight="@dimen/dp16"-->
+    <!--android:layout_marginLeft="@dimen/dp16"-->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginLeft="@dimen/dp16"
+        android:layout_marginRight="@dimen/dp16"
+        android:orientation="vertical">
+
+        <EditText
+            android:id="@+id/ed_email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/dp12"
+            android:singleLine="true"
+            android:hint="Enter Email"
+            android:drawableLeft="@drawable/ic_mail"
+            android:drawablePadding="@dimen/dp10"
+            android:textSize="@dimen/dp14"
+            android:inputType="number"
+            android:background="@drawable/edittext_radius"/>
+
+        <EditText
+            android:id="@+id/ed_pass"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter password"
+            android:padding="@dimen/dp12"
+            android:singleLine="true"
+            android:layout_marginTop="@dimen/dp10"
+            android:drawablePadding="@dimen/dp10"
+            android:textSize="@dimen/dp14"
+            android:inputType="textPassword"
+            android:drawableLeft="@drawable/ic_locked"
+            android:background="@drawable/edittext_radius"/>
+
+        <Button
+            android:id="@+id/btn_login"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorPrimary"
+            android:layout_marginTop="@dimen/dp16"
+            android:textAllCaps="false"
+            android:text="Login"
+            android:background="@drawable/btn_radius"/>
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp20" />
+    </LinearLayout>
+
+
+
+</android.support.constraint.ConstraintLayout>
