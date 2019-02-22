@@ -40,7 +40,7 @@ public class SaleActivity extends AppCompatActivity {
         toolbar.setTitle("Sale Order");
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_back);
+//        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_back);
     }
 
     //onBackPressed

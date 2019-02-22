@@ -11,7 +11,39 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/gray"
+            android:padding="@dimen/dp10">
+            <EditText
+                android:id="@+id/ed_email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/dp12"
+                android:singleLine="true"
+                android:hint="Search"
+                android:drawableLeft="@drawable/ic_search_white"
+                android:drawableTint="@color/black"
+                android:drawablePadding="@dimen/dp10"
+                android:textSize="@dimen/dp14"
+                android:background="@drawable/edittext_radius"/>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/white"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/dp10"
+            android:text="User Listing"
+            android:background="@color/gray"
+            android:textAppearance="?android:attr/textAppearanceMedium"/>
         <android.support.v4.widget.SwipeRefreshLayout
             android:id="@+id/swipe_refresh"
             android:layout_width="match_parent"

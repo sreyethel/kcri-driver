@@ -26,7 +26,7 @@ public class AcountActivity extends AppCompatActivity {
         toolbar.setTitle("My Account");
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_back);
+//        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_back);
     }
 
     //onBackPressed

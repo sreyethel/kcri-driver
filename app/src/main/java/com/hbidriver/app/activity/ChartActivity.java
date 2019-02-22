@@ -8,12 +8,14 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.hbidriver.app.R;
 import com.hbidriver.app.adapter.UserAdapter;
 import com.hbidriver.app.callback.UserCallback;
 import com.hbidriver.app.model.User;
+import com.hbidriver.app.utils.NextActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +44,9 @@ public class ChartActivity extends AppCompatActivity implements UserCallback {
         toolbar.setTitle("Chart");
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_back);
+//        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_back);
+
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
 
     //onBackPressed
@@ -77,6 +81,6 @@ public class ChartActivity extends AppCompatActivity implements UserCallback {
 
     @Override
     public void onClickitem(User item, int pos) {
-        Toast.makeText(this, item.getName(), Toast.LENGTH_SHORT).show();
+        NextActivity.goActivity(activity, new MessageActivity());
     }
 }

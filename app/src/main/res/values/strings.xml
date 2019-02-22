@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">HBI Driver</string>
+    <string name="app_name">KCR Driver</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">Android Studio</string>
@@ -14,4 +14,5 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="google_key">AIzaSyA-s_PMPF2caE3fN02xMJkvD_7OYFo4PYg</string>
 </resources>

@@ -38,7 +38,7 @@ public class NotificationActivity extends AppCompatActivity {
         toolbar.setTitle("Notification");
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_back);
+//        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_back);
     }
 
     //onBackPressed
