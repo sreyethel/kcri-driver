@@ -1,16 +1,25 @@
 package com.hbidriver.app.activity;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.hbidriver.app.R;
+import com.hbidriver.app.utils.NextActivity;
+import com.hbidriver.app.utils.SharedPrefManager;
+import com.squareup.picasso.Picasso;
 
 public class AcountActivity extends AppCompatActivity {
     private Toolbar toolbar;
+    private Activity activity=AcountActivity.this;
+    private TextView tvUserName, tvLocation;
+    private ImageView imageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,6 +27,7 @@ public class AcountActivity extends AppCompatActivity {
         setContentView(R.layout.activity_acount);
 
         initGUI();
+        setData();
     }
 
     private void initGUI(){
@@ -27,6 +37,18 @@ public class AcountActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 //        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_back);
+
+        tvUserName=findViewById(R.id.my_account_user_name);
+        tvLocation=findViewById(R.id.my_account_location);
+        imageView=findViewById(R.id.my_account_image);
+
+    }
+    private void setData(){
+
+        tvUserName.setText(SharedPrefManager.getUserData(activity).getUsername());
+        tvLocation.setText(SharedPrefManager.getUserData(activity).getLocation());
+        Picasso.with(activity).load(SharedPrefManager.getUserData(activity).getImage()).placeholder(R.drawable.default_user).into(imageView);
+
     }
 
     //onBackPressed
@@ -52,7 +74,7 @@ public class AcountActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            Toast.makeText(this, "Click", Toast.LENGTH_SHORT).show();
+            NextActivity.goActivity(activity,new EditAccount());
         }
 
         return super.onOptionsItemSelected(item);

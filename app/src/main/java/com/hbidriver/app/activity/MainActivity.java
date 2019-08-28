@@ -1,6 +1,8 @@
 package com.hbidriver.app.activity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -12,12 +14,15 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.hbidriver.app.R;
 import com.hbidriver.app.fragment.HomeFragment;
 import com.hbidriver.app.utils.DialogManager;
 import com.hbidriver.app.utils.NextActivity;
+import com.hbidriver.app.utils.SharedPrefManager;
+import com.squareup.picasso.Picasso;
 
 
 public class MainActivity extends AppCompatActivity
@@ -29,6 +34,7 @@ public class MainActivity extends AppCompatActivity
     private NavigationView navigationView;
     private View navHeader;
     private TextView txtName, txtWebsite;
+    private ImageView imageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +63,7 @@ public class MainActivity extends AppCompatActivity
         navHeader = navigationView.getHeaderView(0);
         txtName = (TextView) navHeader.findViewById(R.id.name);
         txtWebsite = (TextView) navHeader.findViewById(R.id.textView);
+        imageView=navHeader.findViewById(R.id.imageView);
 
         // load nav menu header data
         loadNavHeader();
@@ -73,8 +80,9 @@ public class MainActivity extends AppCompatActivity
 
     private void loadNavHeader() {
         // name, website
-        txtName.setText("Dalin KOY");
-        txtWebsite.setText("www.phsartech.info");
+        txtName.setText(SharedPrefManager.getUserData(activity).getUsername());
+        txtWebsite.setText(SharedPrefManager.getUserData(activity).getEmail());
+        Picasso.with(activity).load(SharedPrefManager.getUserData(activity).getImage()).placeholder(R.drawable.ic_person_black_24dp).into(imageView);
     }
 
     @Override
@@ -126,7 +134,20 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_setting) {
 
         } else if (id == R.id.nav_logout) {
-            DialogManager.dialog(activity,"ARE YOU SURE?","Do you want to logout from APP!");
+            AlertDialog.Builder builder=new AlertDialog.Builder(activity);
+            builder.setTitle("Note")
+                    .setMessage("Are you sure you want to log out from app?")
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            SharedPrefManager.setLogin(activity,false);
+                            NextActivity.goActivityWithClearTasks(activity, new LoginActivity());
+                        }
+                    })
+                    .setNegativeButton("No",null);
+            AlertDialog alertDialog=builder.create();
+            alertDialog.show();
+            alertDialog.setCanceledOnTouchOutside(false);
         }
 
         return true;

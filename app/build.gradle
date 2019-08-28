@@ -36,4 +36,15 @@ dependencies {
     //---Google play service---
     implementation 'com.google.android.gms:play-services:11.4.0'
     implementation 'com.android.support:multidex:1.0.3'
+
+    //retrofit service
+    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.9.1'
+    implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
+
+    //spot dialog
+    implementation 'com.github.d-max:spots-dialog:0.4@aar'
+
+    //choose image
+    implementation 'andhradroid.dev:aFilechooser:1.0.1'
 }

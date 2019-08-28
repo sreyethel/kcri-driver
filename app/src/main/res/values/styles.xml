@@ -21,4 +21,14 @@
         <item name="android:textColor">?attr/colorPrimary</item>
     </style>
 
+    <!--style for spot dialog-->
+    <style name="Custom" parent="android:Theme.DeviceDefault.Dialog">
+        <item name="DialogTitleAppearance">@android:style/TextAppearance.Large</item>
+        <item name="DialogTitleText">Loading...</item>
+        <item name="DialogSpotColor">@android:color/white</item>
+        <item name="DialogSpotCount">8</item>
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+
 </resources>
