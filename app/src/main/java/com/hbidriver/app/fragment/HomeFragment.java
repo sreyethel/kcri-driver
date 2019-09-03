@@ -32,20 +32,28 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.hbidriver.app.R;
+import com.hbidriver.app.Services.RetrofitClient;
 import com.hbidriver.app.activity.AcountActivity;
 import com.hbidriver.app.activity.ChartActivity;
 import com.hbidriver.app.activity.SaleActivity;
 import com.hbidriver.app.activity.SettingActivity;
+import com.hbidriver.app.activity.SplashActivity;
 import com.hbidriver.app.adapter.HomeAdapter;
 import com.hbidriver.app.banner.MainSliderAdapter;
 import com.hbidriver.app.banner.PicassoImageLoadingService;
 import com.hbidriver.app.callback.HomeCallback;
 import com.hbidriver.app.model.Home;
+import com.hbidriver.app.model.ResponseOnUpdateLocation;
+import com.hbidriver.app.model.SlidesModel;
 import com.hbidriver.app.utils.NextActivity;
+import com.hbidriver.app.utils.SharedPrefManager;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import ss.com.bannerslider.Slider;
 
 import static com.google.android.gms.location.LocationServices.getFusedLocationProviderClient;
@@ -64,7 +72,7 @@ public class HomeFragment extends Fragment implements HomeCallback , OnMapReadyC
     private LocationRequest mLocationRequest;
     //map
     private GoogleMap mMap;
-    private long UPDATE_INTERVAL = 10 * 1000;  /* 10 secs */
+    private long UPDATE_INTERVAL = 20 * 1000;  /* 20 secs */
     private long FASTEST_INTERVAL = 2000; /* 2 sec */
     private static final float DEFAULT_ZOOM = 17f;
     private static final float TILT_LEVEL = 17f;
@@ -113,8 +121,20 @@ public class HomeFragment extends Fragment implements HomeCallback , OnMapReadyC
         slider.postDelayed(new Runnable() {
             @Override
             public void run() {
-                slider.setAdapter(new MainSliderAdapter());
-                slider.setSelectedSlide(0);
+                RetrofitClient.getService().getSlides("Bearer "+SplashActivity.adminUser.getToken()).enqueue(new Callback<SlidesModel>() {
+                    @Override
+                    public void onResponse(Call<SlidesModel> call, Response<SlidesModel> response) {
+                        List<SlidesModel.DataEntity> list=new ArrayList<>();
+                        list=response.body().getData();
+                        slider.setAdapter(new MainSliderAdapter(list));
+                        slider.setSelectedSlide(0);
+                    }
+
+                    @Override
+                    public void onFailure(Call<SlidesModel> call, Throwable t) {
+
+                    }
+                });
             }
         }, 1500);
     }
@@ -192,6 +212,23 @@ public class HomeFragment extends Fragment implements HomeCallback , OnMapReadyC
                 Double.toString(location.getLongitude());
 //        Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
         // You can now create a LatLng Object for use with maps
+
+        if (getActivity()!=null) {
+            RetrofitClient.getService().updateLocation(SharedPrefManager.getUserData(getActivity()).getUser_id(), location.getLatitude(), location.getLongitude(), "Bearer " + SplashActivity.adminUser.getToken()).enqueue(new Callback<ResponseOnUpdateLocation>() {
+                @Override
+                public void onResponse(Call<ResponseOnUpdateLocation> call, Response<ResponseOnUpdateLocation> response) {
+                    if (response.body() != null) {
+                        ResponseOnUpdateLocation result = response.body();
+//                    Toast.makeText(getActivity(),result.getLatitude()+" | "+result.getLongitude(),Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ResponseOnUpdateLocation> call, Throwable t) {
+                    Toast.makeText(getActivity(), "No internet connection...", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
 
         CameraPosition cameraPosition = new CameraPosition.Builder()
                 .target(new LatLng(location.getLatitude(), location.getLongitude()))      // Sets the center of the map to location user

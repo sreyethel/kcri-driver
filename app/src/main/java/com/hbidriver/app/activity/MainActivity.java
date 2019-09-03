@@ -132,7 +132,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_account) {
             NextActivity.goActivity(activity, new SaleActivity());
         } else if (id == R.id.nav_setting) {
-
+            NextActivity.goActivity(activity,new SettingActivity());
         } else if (id == R.id.nav_logout) {
             AlertDialog.Builder builder=new AlertDialog.Builder(activity);
             builder.setTitle("Note")
@@ -141,6 +141,7 @@ public class MainActivity extends AppCompatActivity
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             SharedPrefManager.setLogin(activity,false);
+                            finish();
                             NextActivity.goActivityWithClearTasks(activity, new LoginActivity());
                         }
                     })
@@ -164,5 +165,4 @@ public class MainActivity extends AppCompatActivity
         }
         return false;
     }
-    
 }

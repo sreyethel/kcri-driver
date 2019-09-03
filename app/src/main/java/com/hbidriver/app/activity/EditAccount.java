@@ -28,6 +28,7 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.hbidriver.app.R;
 import com.hbidriver.app.Services.RetrofitClient;
+import com.hbidriver.app.fragment.HomeFragment;
 import com.hbidriver.app.model.UserModel;
 import com.hbidriver.app.utils.NextActivity;
 import com.hbidriver.app.utils.SharedPrefManager;
@@ -63,6 +64,7 @@ public class EditAccount extends AppCompatActivity {
     private MultipartBody.Part image;
     HashMap<String, RequestBody> map;
     private SpotsDialog spotsDialog;
+    MainActivity mainActivity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +90,7 @@ public class EditAccount extends AppCompatActivity {
         uncheck=getResources().getDrawable(R.drawable.ic_cancel_black_24dp);
         map=new HashMap<>();
         spotsDialog=new SpotsDialog(activity,R.style.Custom);
+        mainActivity=new MainActivity();
     }
     private void setData(){
 
@@ -130,7 +133,27 @@ public class EditAccount extends AppCompatActivity {
                             Toast.makeText(activity,"No internet connection...",Toast.LENGTH_LONG).show();
                         }
                     });
+                }else if (!userName.equals("") && !location.equals("") && uri_profile_image==null){
+                    spotsDialog.show();
+                    RetrofitClient.getService().updateDriverUserNameLocation(SharedPrefManager.getUserData(activity).getUser_id(),userName,location,"Bearer "+SplashActivity.adminUser.getToken()).enqueue(new Callback<UserModel>() {
+                        @Override
+                        public void onResponse(Call<UserModel> call, Response<UserModel> response) {
+                            UserModel model=response.body();
+                            spotsDialog.hide();
+                            mainActivity.finish();
+                            Gson gson = new Gson();
+                            model.setEmail(SharedPrefManager.getUserData(activity).getEmail());
+                            String json = gson.toJson(model);
+                            SharedPrefManager.setUserData(activity, json);
+                            NextActivity.goActivityWithClearTasks(activity,new MainActivity());
+                        }
 
+                        @Override
+                        public void onFailure(Call<UserModel> call, Throwable t) {
+                            spotsDialog.hide();
+                            Toast.makeText(activity,"No internet connection...",Toast.LENGTH_LONG).show();
+                        }
+                    });
                 }
                 else {
                     if(userName.equals("")){
@@ -139,9 +162,9 @@ public class EditAccount extends AppCompatActivity {
                     if(location.equals("")){
                         edLocation.setError("location is required");
                     }
-                    if(uri_profile_image==null){
-                        tvTakePhoto.setCompoundDrawablesWithIntrinsicBounds(camera,null,uncheck,null);
-                    }
+//                    if(uri_profile_image==null){
+//                        tvTakePhoto.setCompoundDrawablesWithIntrinsicBounds(camera,null,uncheck,null);
+//                    }
                 }
             }
         });

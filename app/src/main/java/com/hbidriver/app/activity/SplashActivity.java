@@ -32,7 +32,7 @@ public class SplashActivity extends AppCompatActivity {
             public void run() {
                 // This method will be executed once the timer is over
                 // Start your app main activity
-                RetrofitClient.getService().logInAdmin("vaifatadmin@gmail.com","12345678").enqueue(new Callback<AdminUser>() {
+                RetrofitClient.getService().logInAdmin("sothearak@gmail.com","12345678").enqueue(new Callback<AdminUser>() {
                     @Override
                     public void onResponse(Call<AdminUser> call, Response<AdminUser> response) {
                         adminUser=response.body();
