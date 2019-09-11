@@ -9,11 +9,13 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            multiDexKeepFile file('multidex-config.txt')
         }
     }
 }
@@ -47,4 +49,7 @@ dependencies {
 
     //choose image
     implementation 'andhradroid.dev:aFilechooser:1.0.1'
+
+    implementation 'com.android.support:multidex:1.0.3'
+
 }

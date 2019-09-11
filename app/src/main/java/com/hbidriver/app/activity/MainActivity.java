@@ -16,13 +16,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.hbidriver.app.R;
+import com.hbidriver.app.Services.RetrofitClient;
 import com.hbidriver.app.fragment.HomeFragment;
+import com.hbidriver.app.model.UserFromGetProfileModel;
 import com.hbidriver.app.utils.DialogManager;
 import com.hbidriver.app.utils.NextActivity;
 import com.hbidriver.app.utils.SharedPrefManager;
 import com.squareup.picasso.Picasso;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 public class MainActivity extends AppCompatActivity
@@ -35,6 +42,7 @@ public class MainActivity extends AppCompatActivity
     private View navHeader;
     private TextView txtName, txtWebsite;
     private ImageView imageView;
+    public static UserFromGetProfileModel user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,9 +88,24 @@ public class MainActivity extends AppCompatActivity
 
     private void loadNavHeader() {
         // name, website
-        txtName.setText(SharedPrefManager.getUserData(activity).getUsername());
-        txtWebsite.setText(SharedPrefManager.getUserData(activity).getEmail());
-        Picasso.with(activity).load(SharedPrefManager.getUserData(activity).getImage()).placeholder(R.drawable.ic_person_black_24dp).into(imageView);
+        RetrofitClient.getService().getUserProfile(SharedPrefManager.getUserData(activity).getUser_id(),"Bearer "+SharedPrefManager.getUserData(activity).getToken()).enqueue(new Callback<UserFromGetProfileModel>() {
+            @Override
+            public void onResponse(Call<UserFromGetProfileModel> call, Response<UserFromGetProfileModel> response) {
+                if (response.body()!=null) {
+                    user=response.body();
+                    txtName.setText(user.getUsername());
+                    txtWebsite.setText(user.getEmail());
+                    Picasso.with(activity).load(user.getImage()).placeholder(R.drawable.ic_person_black_24dp).into(imageView);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserFromGetProfileModel> call, Throwable t) {
+                Toast.makeText(activity,"No internet connection...",Toast.LENGTH_LONG).show();
+            }
+        });
+
+
     }
 
     @Override

@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -76,6 +77,7 @@ public class HomeFragment extends Fragment implements HomeCallback , OnMapReadyC
     private long FASTEST_INTERVAL = 2000; /* 2 sec */
     private static final float DEFAULT_ZOOM = 17f;
     private static final float TILT_LEVEL = 17f;
+    private static final int MY_PERMISSIONS_REQUEST_READ_FINE_LOCATION = 100;
 
     String[] name={
             "Chart Room",
@@ -117,26 +119,44 @@ public class HomeFragment extends Fragment implements HomeCallback , OnMapReadyC
         slider = view.findViewById(R.id.banner_slider);
         Slider.init(new PicassoImageLoadingService(getActivity()));
 
-        //delay for testing empty view functionality
-        slider.postDelayed(new Runnable() {
+        RetrofitClient.getService().getSlides("Bearer "+SharedPrefManager.getUserData(getActivity()).getToken()).enqueue(new Callback<SlidesModel>() {
             @Override
-            public void run() {
-                RetrofitClient.getService().getSlides("Bearer "+SplashActivity.adminUser.getToken()).enqueue(new Callback<SlidesModel>() {
-                    @Override
-                    public void onResponse(Call<SlidesModel> call, Response<SlidesModel> response) {
-                        List<SlidesModel.DataEntity> list=new ArrayList<>();
-                        list=response.body().getData();
-                        slider.setAdapter(new MainSliderAdapter(list));
-                        slider.setSelectedSlide(0);
-                    }
-
-                    @Override
-                    public void onFailure(Call<SlidesModel> call, Throwable t) {
-
-                    }
-                });
+            public void onResponse(Call<SlidesModel> call, Response<SlidesModel> response) {
+                List<SlidesModel.DataEntity> list=new ArrayList<>();
+                if (response.body()!=null) {
+                    list = response.body().getData();
+                    slider.setAdapter(new MainSliderAdapter(list));
+                    slider.setInterval(3000);
+                    slider.setLoopSlides(false);
+                }
             }
-        }, 1500);
+
+            @Override
+            public void onFailure(Call<SlidesModel> call, Throwable t) {
+
+            }
+        });
+
+        //delay for testing empty view functionality
+//        slider.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                RetrofitClient.getService().getSlides("Bearer "+SplashActivity.adminUser.getToken()).enqueue(new Callback<SlidesModel>() {
+//                    @Override
+//                    public void onResponse(Call<SlidesModel> call, Response<SlidesModel> response) {
+//                        List<SlidesModel.DataEntity> list=new ArrayList<>();
+//                        list=response.body().getData();
+//                        slider.setAdapter(new MainSliderAdapter(list));
+////                        slider.setSelectedSlide(0);
+//                    }
+//
+//                    @Override
+//                    public void onFailure(Call<SlidesModel> call, Throwable t) {
+//
+//                    }
+//                });
+//            }
+//        }, 1500);
     }
 
     private void setData(){
@@ -214,7 +234,7 @@ public class HomeFragment extends Fragment implements HomeCallback , OnMapReadyC
         // You can now create a LatLng Object for use with maps
 
         if (getActivity()!=null) {
-            RetrofitClient.getService().updateLocation(SharedPrefManager.getUserData(getActivity()).getUser_id(), location.getLatitude(), location.getLongitude(), "Bearer " + SplashActivity.adminUser.getToken()).enqueue(new Callback<ResponseOnUpdateLocation>() {
+            RetrofitClient.getService().updateLocation(SharedPrefManager.getUserData(getActivity()).getUser_id(), location.getLatitude(), location.getLongitude(), "Bearer " + SharedPrefManager.getUserData(getActivity()).getToken()).enqueue(new Callback<ResponseOnUpdateLocation>() {
                 @Override
                 public void onResponse(Call<ResponseOnUpdateLocation> call, Response<ResponseOnUpdateLocation> response) {
                     if (response.body() != null) {
@@ -264,5 +284,26 @@ public class HomeFragment extends Fragment implements HomeCallback , OnMapReadyC
         ActivityCompat.requestPermissions(getActivity(),
                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                 100);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case 100: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the contacts-related task you need to do.
+
+                } else {
+                    Toast.makeText(getActivity(),"Action denied",Toast.LENGTH_LONG).show();
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+        }
     }
 }

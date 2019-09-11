@@ -6,6 +6,7 @@ public class AdminUser {
     private String msg;
     private int user_id;
     private String role;
+    private String success;
 
     public String getToken() {
         return token;
@@ -37,5 +38,13 @@ public class AdminUser {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getSuccess() {
+        return success;
+    }
+
+    public void setSuccess(String success) {
+        this.success = success;
     }
 }

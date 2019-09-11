@@ -45,9 +45,9 @@ public class AcountActivity extends AppCompatActivity {
     }
     private void setData(){
 
-        tvUserName.setText(SharedPrefManager.getUserData(activity).getUsername());
-        tvLocation.setText(SharedPrefManager.getUserData(activity).getLocation());
-        Picasso.with(activity).load(SharedPrefManager.getUserData(activity).getImage()).placeholder(R.drawable.default_user).into(imageView);
+        tvUserName.setText(MainActivity.user.getUsername());
+        tvLocation.setText(MainActivity.user.getAddress());
+        Picasso.with(activity).load(MainActivity.user.getImage()).placeholder(R.drawable.default_user).into(imageView);
 
     }
 

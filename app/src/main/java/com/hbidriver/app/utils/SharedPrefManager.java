@@ -6,7 +6,7 @@ import android.content.SharedPreferences;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.hbidriver.app.model.UserModel;
+import com.hbidriver.app.model.AdminUser;
 
 public class SharedPrefManager {
     public static final String PROJECT="project";
@@ -19,11 +19,11 @@ public class SharedPrefManager {
         SharedPreferences.Editor editor=sharedPreferences.edit();
         editor.putString(USER_DATA,value).apply();
     }
-    public static UserModel getUserData(Activity activity){
+    public static AdminUser getUserData(Activity activity){
         SharedPreferences sharedPreferences=activity.getSharedPreferences(PROJECT, Context.MODE_PRIVATE);
         Gson gson=new Gson();
         String json = sharedPreferences.getString(USER_DATA,"");
-        return gson.fromJson(json,new TypeToken<UserModel>(){}.getType());
+        return gson.fromJson(json,new TypeToken<AdminUser>(){}.getType());
     }
 
     //set log in

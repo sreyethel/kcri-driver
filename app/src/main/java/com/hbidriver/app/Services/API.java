@@ -1,13 +1,10 @@
 package com.hbidriver.app.Services;
 
-import android.support.v7.widget.CardView;
-
 import com.hbidriver.app.model.AdminUser;
 import com.hbidriver.app.model.ResponseOnChangePassword;
 import com.hbidriver.app.model.ResponseOnUpdateLocation;
 import com.hbidriver.app.model.SlidesModel;
-import com.hbidriver.app.model.User;
-import com.hbidriver.app.model.UserModel;
+import com.hbidriver.app.model.UserFromGetProfileModel;
 
 import java.util.Map;
 
@@ -27,15 +24,15 @@ public interface API {
     @POST("login")
     Call<AdminUser> logInAdmin(@Query("email") String email, @Query("password") String password);
 
-    @POST("driver-login")
-    Call<UserModel> logInDriver(@Header("Authorization") String token, @Query("email") String email, @Query("password") String password);
+    @GET("driver-profile")
+    Call<UserFromGetProfileModel> getUserProfile(@Query("user_id") int user_id,@Header("Authorization") String token);
 
     @Multipart
     @POST("driver-change-profile")
-    Call<UserModel> updateDriverUser(@Part MultipartBody.Part image, @PartMap() Map<String, RequestBody> partMap, @Header("Authorization") String token);
+    Call<UserFromGetProfileModel> updateDriverUser(@Part MultipartBody.Part image, @PartMap() Map<String, RequestBody> partMap, @Header("Authorization") String token);
 
     @POST("driver-change-profile")
-    Call<UserModel> updateDriverUserNameLocation(
+    Call<UserFromGetProfileModel> updateDriverUserNameLocation(
             @Query("user_id") int user_id,
             @Query("username") String username,
             @Query("location") String location,

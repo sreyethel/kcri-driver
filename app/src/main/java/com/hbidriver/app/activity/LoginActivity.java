@@ -12,7 +12,7 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.hbidriver.app.R;
 import com.hbidriver.app.Services.RetrofitClient;
-import com.hbidriver.app.model.UserModel;
+import com.hbidriver.app.model.AdminUser;
 import com.hbidriver.app.utils.NextActivity;
 import com.hbidriver.app.utils.SharedPrefManager;
 
@@ -59,15 +59,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             case R.id.btn_login:
                 if(!edEmail.getText().toString().equals("") && !edPass.getText().toString().equals("")){
                     spotsDialog.show();
-                    RetrofitClient.getService().logInDriver(SplashActivity.adminUser.getToken(),edEmail.getText().toString(),edPass.getText().toString()).enqueue(new Callback<UserModel>() {
+                    RetrofitClient.getService().logInAdmin(edEmail.getText().toString(),edPass.getText().toString()).enqueue(new Callback<AdminUser>() {
                         @Override
-                        public void onResponse(Call<UserModel> call, Response<UserModel> response) {
-                            UserModel user = response.body();
+                        public void onResponse(Call<AdminUser> call, Response<AdminUser> response) {
+                            AdminUser user = response.body();
                             spotsDialog.hide();
                             if(user!=null) {
-                                if (user.getMsg().equals("Login success")) {
+                                if (user.getSuccess().equals("true")) {
                                     Gson gson = new Gson();
-                                    user.setEmail(edEmail.getText().toString());
                                     String json = gson.toJson(user);
 
                                     SharedPrefManager.setUserData(LoginActivity.this, json);
@@ -89,7 +88,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         }
 
                         @Override
-                        public void onFailure(Call<UserModel> call, Throwable t) {
+                        public void onFailure(Call<AdminUser> call, Throwable t) {
                             spotsDialog.hide();
                             Toast.makeText(activity,"No internet connection...",Toast.LENGTH_LONG).show();
                         }

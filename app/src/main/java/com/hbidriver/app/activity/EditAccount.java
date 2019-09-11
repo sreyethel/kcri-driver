@@ -25,11 +25,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
 import com.hbidriver.app.R;
 import com.hbidriver.app.Services.RetrofitClient;
-import com.hbidriver.app.fragment.HomeFragment;
-import com.hbidriver.app.model.UserModel;
+import com.hbidriver.app.model.UserFromGetProfileModel;
 import com.hbidriver.app.utils.NextActivity;
 import com.hbidriver.app.utils.SharedPrefManager;
 import com.ipaulpro.afilechooser.utils.FileUtils;
@@ -64,7 +62,6 @@ public class EditAccount extends AppCompatActivity {
     private MultipartBody.Part image;
     HashMap<String, RequestBody> map;
     private SpotsDialog spotsDialog;
-    MainActivity mainActivity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,12 +87,11 @@ public class EditAccount extends AppCompatActivity {
         uncheck=getResources().getDrawable(R.drawable.ic_cancel_black_24dp);
         map=new HashMap<>();
         spotsDialog=new SpotsDialog(activity,R.style.Custom);
-        mainActivity=new MainActivity();
     }
     private void setData(){
 
-        edUserName.setText(SharedPrefManager.getUserData(activity).getUsername());
-        edLocation.setText(SharedPrefManager.getUserData(activity).getLocation());
+        edUserName.setText(MainActivity.user.getUsername());
+        edLocation.setText(MainActivity.user.getAddress());
 
         btnSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -114,42 +110,39 @@ public class EditAccount extends AppCompatActivity {
                     map.put("location",rbLocation);
 
                     spotsDialog.show();
-                    RetrofitClient.getService().updateDriverUser(image,map,"Bearer "+SplashActivity.adminUser.getToken()).enqueue(new Callback<UserModel>() {
+                    RetrofitClient.getService().updateDriverUser(image,map,"Bearer "+SharedPrefManager.getUserData(activity).getToken()).enqueue(new Callback<UserFromGetProfileModel>() {
                         @Override
-                        public void onResponse(Call<UserModel> call, Response<UserModel> response) {
-                            UserModel model=response.body();
+                        public void onResponse(Call<UserFromGetProfileModel> call, Response<UserFromGetProfileModel> response) {
+                            UserFromGetProfileModel model=response.body();
                             spotsDialog.hide();
-                            Gson gson = new Gson();
-                            model.setEmail(SharedPrefManager.getUserData(activity).getEmail());
-                            String json = gson.toJson(model);
-
-                            SharedPrefManager.setUserData(activity, json);
+//                            Gson gson = new Gson();
+//                            String json = gson.toJson(model);
+//
+//                            SharedPrefManager.setUserData(activity, json);
                             NextActivity.goActivityWithClearTasks(activity,new MainActivity());
                         }
 
                         @Override
-                        public void onFailure(Call<UserModel> call, Throwable t) {
+                        public void onFailure(Call<UserFromGetProfileModel> call, Throwable t) {
                             spotsDialog.hide();
                             Toast.makeText(activity,"No internet connection...",Toast.LENGTH_LONG).show();
                         }
                     });
                 }else if (!userName.equals("") && !location.equals("") && uri_profile_image==null){
                     spotsDialog.show();
-                    RetrofitClient.getService().updateDriverUserNameLocation(SharedPrefManager.getUserData(activity).getUser_id(),userName,location,"Bearer "+SplashActivity.adminUser.getToken()).enqueue(new Callback<UserModel>() {
+                    RetrofitClient.getService().updateDriverUserNameLocation(SharedPrefManager.getUserData(activity).getUser_id(),userName,location,"Bearer "+SharedPrefManager.getUserData(activity).getToken()).enqueue(new Callback<UserFromGetProfileModel>() {
                         @Override
-                        public void onResponse(Call<UserModel> call, Response<UserModel> response) {
-                            UserModel model=response.body();
+                        public void onResponse(Call<UserFromGetProfileModel> call, Response<UserFromGetProfileModel> response) {
+                            UserFromGetProfileModel model=response.body();
                             spotsDialog.hide();
-                            mainActivity.finish();
-                            Gson gson = new Gson();
-                            model.setEmail(SharedPrefManager.getUserData(activity).getEmail());
-                            String json = gson.toJson(model);
-                            SharedPrefManager.setUserData(activity, json);
+//                            Gson gson = new Gson();
+//                            String json = gson.toJson(model);
+//                            SharedPrefManager.setUserData(activity, json);
                             NextActivity.goActivityWithClearTasks(activity,new MainActivity());
                         }
 
                         @Override
-                        public void onFailure(Call<UserModel> call, Throwable t) {
+                        public void onFailure(Call<UserFromGetProfileModel> call, Throwable t) {
                             spotsDialog.hide();
                             Toast.makeText(activity,"No internet connection...",Toast.LENGTH_LONG).show();
                         }

@@ -64,7 +64,7 @@ public class ChangePassword extends AppCompatActivity {
                 if(!new_password.equals("") && !confirm_password.equals("")){
                     if(new_password.equals(confirm_password)){
                         spotsDialog.show();
-                        RetrofitClient.getService().changePassword(SharedPrefManager.getUserData(activity).getUser_id(),new_password,"Bearer "+SplashActivity.adminUser.getToken()).enqueue(new Callback<ResponseOnChangePassword>() {
+                        RetrofitClient.getService().changePassword(SharedPrefManager.getUserData(activity).getUser_id(),new_password,"Bearer "+SharedPrefManager.getUserData(activity).getToken()).enqueue(new Callback<ResponseOnChangePassword>() {
                             @Override
                             public void onResponse(Call<ResponseOnChangePassword> call, Response<ResponseOnChangePassword> response) {
                                 spotsDialog.hide();

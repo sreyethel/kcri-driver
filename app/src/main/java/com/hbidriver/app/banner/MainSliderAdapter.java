@@ -22,6 +22,9 @@ public class MainSliderAdapter extends SliderAdapter {
 
     @Override
     public int getItemCount() {
+        if(null==list&& list.size()<0){
+            return 0;
+        }
         return list.size();
     }
 
