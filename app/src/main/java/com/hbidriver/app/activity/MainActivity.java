@@ -101,7 +101,24 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onFailure(Call<UserFromGetProfileModel> call, Throwable t) {
-                Toast.makeText(activity,"No internet connection...",Toast.LENGTH_LONG).show();
+                AlertDialog.Builder builder=new AlertDialog.Builder(activity);
+                builder.setTitle("Note")
+                        .setMessage("No internet connection")
+                        .setPositiveButton("Try Again", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                NextActivity.goActivityWithClearTasks(activity,new MainActivity());
+                            }
+                        })
+                        .setNegativeButton("Exit", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                finish();
+                            }
+                        });
+                AlertDialog alertDialog=builder.create();
+                alertDialog.show();
+                alertDialog.setCanceledOnTouchOutside(false);
             }
         });
 
