@@ -3,9 +3,11 @@ package com.hbidriver.app.activity;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -16,12 +18,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.hbidriver.app.R;
+import com.hbidriver.app.Services.RestClient;
 import com.hbidriver.app.Services.RetrofitClient;
 import com.hbidriver.app.fragment.HomeFragment;
 import com.hbidriver.app.model.UserFromGetProfileModel;
+import com.hbidriver.app.service.LocationService;
 import com.hbidriver.app.utils.DialogManager;
 import com.hbidriver.app.utils.NextActivity;
 import com.hbidriver.app.utils.SharedPrefManager;
@@ -71,43 +74,44 @@ public class MainActivity extends AppCompatActivity
         navHeader = navigationView.getHeaderView(0);
         txtName = (TextView) navHeader.findViewById(R.id.name);
         txtWebsite = (TextView) navHeader.findViewById(R.id.textView);
-        imageView=navHeader.findViewById(R.id.imageView);
+        imageView = navHeader.findViewById(R.id.imageView);
 
         // load nav menu header data
-        loadNavHeader();
+        //loadNavHeader();
+        loadDriverProfile();
 
     }
 
-    private void initGUI(){
+    private void initGUI() {
 
     }
 
-    private void initEvent(){
+    private void initEvent() {
         setFragment(new HomeFragment());
     }
 
     private void loadNavHeader() {
         // name, website
-        RetrofitClient.getService().getUserProfile(SharedPrefManager.getUserData(activity).getUser_id(),"Bearer "+SharedPrefManager.getUserData(activity).getToken()).enqueue(new Callback<UserFromGetProfileModel>() {
+        RetrofitClient.getService().getUserProfile(SharedPrefManager.getUserData(activity).getUser_id(), "Bearer " + SharedPrefManager.getUserData(activity).getToken()).enqueue(new Callback<UserFromGetProfileModel>() {
             @Override
             public void onResponse(Call<UserFromGetProfileModel> call, Response<UserFromGetProfileModel> response) {
-                if (response.body()!=null) {
-                    user=response.body();
-                    txtName.setText(user.getUsername());
-                    txtWebsite.setText(user.getEmail());
-                    Picasso.with(activity).load(user.getImage()).placeholder(R.drawable.ic_person_black_24dp).into(imageView);
+                if (response.body() != null) {
+                    user = response.body();
+                    txtName.setText(user.getData().getUsername());
+                    txtWebsite.setText(user.getData().getEmail());
+                    Picasso.with(activity).load(user.getData().getImage()).placeholder(R.drawable.ic_person_black_24dp).into(imageView);
                 }
             }
 
             @Override
             public void onFailure(Call<UserFromGetProfileModel> call, Throwable t) {
-                AlertDialog.Builder builder=new AlertDialog.Builder(activity);
+                AlertDialog.Builder builder = new AlertDialog.Builder(activity);
                 builder.setTitle("Note")
                         .setMessage("No internet connection")
                         .setPositiveButton("Try Again", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                NextActivity.goActivityWithClearTasks(activity,new MainActivity());
+                                NextActivity.goActivityWithClearTasks(activity, new MainActivity());
                             }
                         })
                         .setNegativeButton("Exit", new DialogInterface.OnClickListener() {
@@ -116,7 +120,7 @@ public class MainActivity extends AppCompatActivity
                                 finish();
                             }
                         });
-                AlertDialog alertDialog=builder.create();
+                AlertDialog alertDialog = builder.create();
                 alertDialog.show();
                 alertDialog.setCanceledOnTouchOutside(false);
             }
@@ -125,13 +129,55 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    private void loadDriverProfile() {
+        int userId = SharedPrefManager.getUserData(activity).getUser_id();
+        String token = "Bearer " + SharedPrefManager.getUserData(activity).getToken();
+        RestClient.getServiceV2().getDriverProfile(userId, token).enqueue(new Callback<UserFromGetProfileModel>() {
+            @Override
+            public void onResponse(Call<UserFromGetProfileModel> call, Response<UserFromGetProfileModel> response) {
+                if (response.body() != null) {
+                    user = response.body();
+                    txtName.setText(user.getData().getUsername());
+                    txtWebsite.setText(user.getData().getEmail());
+                    Picasso.with(activity).load(user.getData().getImage()).placeholder(R.drawable.ic_person_black_24dp).into(imageView);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserFromGetProfileModel> call, Throwable t) {
+                showErrorDialog();
+            }
+        });
+    }
+
+    private void showErrorDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle("Note")
+                .setMessage("No internet connection")
+                .setPositiveButton("Try Again", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        NextActivity.goActivityWithClearTasks(activity, new MainActivity());
+                    }
+                })
+                .setNegativeButton("Exit", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        finish();
+                    }
+                });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+        alertDialog.setCanceledOnTouchOutside(false);
+    }
+
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            DialogManager.exDialog(activity,"Exit","Do you want to close the APP?");
+            DialogManager.exDialog(activity, "Exit", "Do you want to close the APP?");
         }
     }
 
@@ -151,7 +197,7 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-           NextActivity.goActivity(activity,new NotificationActivity());
+            NextActivity.goActivity(activity, new NotificationActivity());
         }
 
         return super.onOptionsItemSelected(item);
@@ -172,21 +218,21 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_account) {
             NextActivity.goActivity(activity, new SaleActivity());
         } else if (id == R.id.nav_setting) {
-            NextActivity.goActivity(activity,new SettingActivity());
+            NextActivity.goActivity(activity, new SettingActivity());
         } else if (id == R.id.nav_logout) {
-            AlertDialog.Builder builder=new AlertDialog.Builder(activity);
+            AlertDialog.Builder builder = new AlertDialog.Builder(activity);
             builder.setTitle("Note")
                     .setMessage("Are you sure you want to log out from app?")
                     .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            SharedPrefManager.setLogin(activity,false);
+                            SharedPrefManager.setLogin(activity, false);
                             finish();
                             NextActivity.goActivityWithClearTasks(activity, new LoginActivity());
                         }
                     })
-                    .setNegativeButton("No",null);
-            AlertDialog alertDialog=builder.create();
+                    .setNegativeButton("No", null);
+            AlertDialog alertDialog = builder.create();
             alertDialog.show();
             alertDialog.setCanceledOnTouchOutside(false);
         }

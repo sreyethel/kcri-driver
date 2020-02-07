@@ -2,58 +2,70 @@ package com.hbidriver.app.model;
 
 public class UserFromGetProfileModel {
 
-    private int id;
-    private String username;
-    private String image;
-    private String email;
-    private String phone;
-    private String address;
+    private Data data;
 
-    public int getId() {
-        return id;
+    public Data getData() {
+        return data;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setData(Data data) {
+        this.data = data;
     }
 
-    public String getUsername() {
-        return username;
-    }
+    public class Data {
+        private int id;
+        private String username;
+        private String image;
+        private String email;
+        private String phone;
+        private String address;
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+        public int getId() {
+            return id;
+        }
 
-    public String getEmail() {
-        return email;
-    }
+        public void setId(int id) {
+            this.id = id;
+        }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+        public String getUsername() {
+            return username;
+        }
 
-    public String getPhone() {
-        return phone;
-    }
+        public void setUsername(String username) {
+            this.username = username;
+        }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
+        public String getEmail() {
+            return email;
+        }
 
-    public String getAddress() {
-        return address;
-    }
+        public void setEmail(String email) {
+            this.email = email;
+        }
 
-    public void setAddress(String address) {
-        this.address = address;
-    }
+        public String getPhone() {
+            return phone;
+        }
 
-    public String getImage() {
-        return image;
-    }
+        public void setPhone(String phone) {
+            this.phone = phone;
+        }
 
-    public void setImage(String image) {
-        this.image = image;
+        public String getAddress() {
+            return address;
+        }
+
+        public void setAddress(String address) {
+            this.address = address;
+        }
+
+        public String getImage() {
+            return image;
+        }
+
+        public void setImage(String image) {
+            this.image = image;
+        }
     }
 }

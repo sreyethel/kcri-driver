@@ -14,12 +14,12 @@ public class SharedPrefManager {
     public static final String USER_DATA="user_data";
     public static final String IS_LOGIN="is_login";
 
-    public static void setUserData(Activity activity, String value){
+    public static void setUserData(Context activity, String value){
         SharedPreferences sharedPreferences=activity.getSharedPreferences(PROJECT, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor=sharedPreferences.edit();
         editor.putString(USER_DATA,value).apply();
     }
-    public static AdminUser getUserData(Activity activity){
+    public static AdminUser getUserData(Context activity){
         SharedPreferences sharedPreferences=activity.getSharedPreferences(PROJECT, Context.MODE_PRIVATE);
         Gson gson=new Gson();
         String json = sharedPreferences.getString(USER_DATA,"");

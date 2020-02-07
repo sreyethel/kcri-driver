@@ -10,6 +10,7 @@ import java.util.Map;
 
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
@@ -17,15 +18,16 @@ import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.PartMap;
+import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface API {
 
-    @POST("login")
+    @POST("driver-login")
     Call<AdminUser> logInAdmin(@Query("email") String email, @Query("password") String password);
 
     @GET("driver-profile")
-    Call<UserFromGetProfileModel> getUserProfile(@Query("user_id") int user_id,@Header("Authorization") String token);
+    Call<UserFromGetProfileModel> getUserProfile(@Query("user_id") int user_id, @Header("Authorization") String token);
 
     @Multipart
     @POST("driver-change-profile")
@@ -40,17 +42,21 @@ public interface API {
     );
 
     @POST("driver-change-password")
-    Call<ResponseOnChangePassword> changePassword(@Query("user_id") int user_id, @Query("password") String password, @Header("Authorization") String token);
+    Call<ResponseOnChangePassword> changePassword(@Query("user_id") int user_id, @Query("new_password") String password, @Header("Authorization") String token);
 
     @POST("driver-post-location")
     Call<ResponseOnUpdateLocation> updateLocation(
             @Query("user_id") int user_id,
             @Query("latitude") double latitude,
             @Query("longitude") double longitude,
+            @Query("status") int status,
             @Header("Authorization") String token
     );
 
     @GET("slides")
     Call<SlidesModel> getSlides(@Header("Authorization") String token);
+
+    @GET("driver-profile/{user_id}")
+    Call<UserFromGetProfileModel> getDriverProfile(@Path("user_id") int user_id, @Header("Authorization") String token);
 
 }

@@ -1,13 +1,15 @@
 package com.hbidriver.app.fragment;
 
-
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -15,6 +17,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,6 +49,7 @@ import com.hbidriver.app.callback.HomeCallback;
 import com.hbidriver.app.model.Home;
 import com.hbidriver.app.model.ResponseOnUpdateLocation;
 import com.hbidriver.app.model.SlidesModel;
+import com.hbidriver.app.service.LocationService;
 import com.hbidriver.app.utils.NextActivity;
 import com.hbidriver.app.utils.SharedPrefManager;
 
@@ -62,30 +66,31 @@ import static com.google.android.gms.location.LocationServices.getFusedLocationP
 /**
  * A simple {@link Fragment} subclass.
  */
-public class HomeFragment extends Fragment implements HomeCallback , OnMapReadyCallback{
+public class HomeFragment extends Fragment implements HomeCallback, OnMapReadyCallback {
     private View view;
     private Slider slider;
     private RecyclerView recyclerView;
     private List<Home> list;
     private HomeAdapter mAdapter;
     private LinearLayoutManager manager;
+    private SupportMapFragment mapFragment;
 
     private LocationRequest mLocationRequest;
     //map
     private GoogleMap mMap;
-    private long UPDATE_INTERVAL = 20 * 1000;  /* 20 secs */
-    private long FASTEST_INTERVAL = 2000; /* 2 sec */
+    private long UPDATE_INTERVAL = 30 * 1000;  /* 20 secs */
+    private long FASTEST_INTERVAL = 20000; /* 2 sec */
     private static final float DEFAULT_ZOOM = 17f;
     private static final float TILT_LEVEL = 17f;
     private static final int MY_PERMISSIONS_REQUEST_READ_FINE_LOCATION = 100;
 
-    String[] name={
+    String[] name = {
             "Chart Room",
             "My Account",
             "Setting",
 
     };
-    int[] image={
+    int[] image = {
             R.drawable.ic_circle_color,
             R.drawable.ic_user_color,
             R.drawable.ic_settings_color
@@ -103,27 +108,35 @@ public class HomeFragment extends Fragment implements HomeCallback , OnMapReadyC
         view = inflater.inflate(R.layout.fragment_home, container, false);
 
         initGUI();
-        initMap();
-        startLocationUpdates();
         setupBanner();
         setData();
 
         return view;
     }
 
-    private void initGUI(){
-        recyclerView = view.findViewById(R.id.recycler_view);
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        if (checkPermissions()) {
+            initMap();
+        }
     }
 
-    private void setupBanner(){
+    private void initGUI() {
+        recyclerView = view.findViewById(R.id.recycler_view);
+        mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+    }
+
+    private void setupBanner() {
         slider = view.findViewById(R.id.banner_slider);
         Slider.init(new PicassoImageLoadingService(getActivity()));
 
-        RetrofitClient.getService().getSlides("Bearer "+SharedPrefManager.getUserData(getActivity()).getToken()).enqueue(new Callback<SlidesModel>() {
+        RetrofitClient.getService().getSlides("Bearer " + SharedPrefManager.getUserData(getActivity()).getToken()).enqueue(new Callback<SlidesModel>() {
             @Override
             public void onResponse(Call<SlidesModel> call, Response<SlidesModel> response) {
-                List<SlidesModel.DataEntity> list=new ArrayList<>();
-                if (response.body()!=null) {
+                List<SlidesModel.DataEntity> list = new ArrayList<>();
+                if (response.body() != null) {
                     list = response.body().getData();
                     slider.setAdapter(new MainSliderAdapter(list));
                     slider.setInterval(3000);
@@ -141,7 +154,7 @@ public class HomeFragment extends Fragment implements HomeCallback , OnMapReadyC
 //        slider.postDelayed(new Runnable() {
 //            @Override
 //            public void run() {
-//                RetrofitClient.getService().getSlides("Bearer "+SplashActivity.adminUser.getToken()).enqueue(new Callback<SlidesModel>() {
+//                RetrofitClient.getServiceV2().getSlides("Bearer "+SplashActivity.adminUser.getToken()).enqueue(new Callback<SlidesModel>() {
 //                    @Override
 //                    public void onResponse(Call<SlidesModel> call, Response<SlidesModel> response) {
 //                        List<SlidesModel.DataEntity> list=new ArrayList<>();
@@ -159,38 +172,36 @@ public class HomeFragment extends Fragment implements HomeCallback , OnMapReadyC
 //        }, 1500);
     }
 
-    private void setData(){
+    private void setData() {
         list = new ArrayList<>();
         manager = new LinearLayoutManager(getActivity());
-        recyclerView.setLayoutManager(new GridLayoutManager(getActivity(),3));
+        recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
 
         getData();
-        mAdapter = new HomeAdapter(list,this);
+        mAdapter = new HomeAdapter(list, this);
         recyclerView.setAdapter(mAdapter);
-
     }
 
-    private void getData(){
-        for(int i = 0; i<name.length; i++){
-            list.add(new Home(name[i],image[i]));
+    private void getData() {
+        for (int i = 0; i < name.length; i++) {
+            list.add(new Home(name[i], image[i]));
         }
     }
 
     @Override
     public void onItemClick(Home item, int position) {
-       if (position==0){
+        if (position == 0) {
             NextActivity.goActivity(getActivity(), new ChartActivity());
-        }else if (position==1){
-           NextActivity.goActivity(getActivity(), new AcountActivity());
-       }else if (position==2){
-           NextActivity.goActivity(getActivity(), new SettingActivity());
-       }
+        } else if (position == 1) {
+            NextActivity.goActivity(getActivity(), new AcountActivity());
+        } else if (position == 2) {
+            NextActivity.goActivity(getActivity(), new SettingActivity());
+        }
     }
 
     //map
     private void initMap() {
-        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
     }
 
@@ -219,6 +230,7 @@ public class HomeFragment extends Fragment implements HomeCallback , OnMapReadyC
                     @Override
                     public void onLocationResult(LocationResult locationResult) {
                         // do work here
+                        Log.d("locationChange :::: ", "" + locationResult.getLastLocation().getLatitude());
                         onLocationChanged(locationResult.getLastLocation());
                     }
                 },
@@ -233,22 +245,22 @@ public class HomeFragment extends Fragment implements HomeCallback , OnMapReadyC
 //        Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
         // You can now create a LatLng Object for use with maps
 
-        if (getActivity()!=null) {
-            RetrofitClient.getService().updateLocation(SharedPrefManager.getUserData(getActivity()).getUser_id(), location.getLatitude(), location.getLongitude(), "Bearer " + SharedPrefManager.getUserData(getActivity()).getToken()).enqueue(new Callback<ResponseOnUpdateLocation>() {
-                @Override
-                public void onResponse(Call<ResponseOnUpdateLocation> call, Response<ResponseOnUpdateLocation> response) {
-                    if (response.body() != null) {
-                        ResponseOnUpdateLocation result = response.body();
-//                    Toast.makeText(getActivity(),result.getLatitude()+" | "+result.getLongitude(),Toast.LENGTH_SHORT).show();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<ResponseOnUpdateLocation> call, Throwable t) {
-                    Toast.makeText(getActivity(), "No internet connection...", Toast.LENGTH_LONG).show();
-                }
-            });
-        }
+//        if (getActivity() != null) {
+//            RetrofitClient.getService().updateLocation(SharedPrefManager.getUserData(getActivity()).getUser_id(), location.getLatitude(), location.getLongitude(),0, "Bearer " + SharedPrefManager.getUserData(getActivity()).getToken()).enqueue(new Callback<ResponseOnUpdateLocation>() {
+//                @Override
+//                public void onResponse(Call<ResponseOnUpdateLocation> call, Response<ResponseOnUpdateLocation> response) {
+//                    if (response.body() != null) {
+//                        ResponseOnUpdateLocation result = response.body();
+////                    Toast.makeText(getActivity(),result.getLatitude()+" | "+result.getLongitude(),Toast.LENGTH_SHORT).show();
+//                    }
+//                }
+//
+//                @Override
+//                public void onFailure(Call<ResponseOnUpdateLocation> call, Throwable t) {
+//                    Toast.makeText(getActivity(), "No internet connection...", Toast.LENGTH_LONG).show();
+//                }
+//            });
+//        }
 
         CameraPosition cameraPosition = new CameraPosition.Builder()
                 .target(new LatLng(location.getLatitude(), location.getLongitude()))      // Sets the center of the map to location user
@@ -262,10 +274,13 @@ public class HomeFragment extends Fragment implements HomeCallback , OnMapReadyC
     @SuppressLint("MissingPermission")
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        if(checkPermissions()) {
+        if (checkPermissions()) {
+            Log.d("map :::", " ready");
+            startLocationUpdates();
             mMap = googleMap;
             mMap.setMyLocationEnabled(true);
             mMap.getUiSettings().setMyLocationButtonEnabled(false);
+            startLocationService();
         }
     }
 
@@ -281,29 +296,38 @@ public class HomeFragment extends Fragment implements HomeCallback , OnMapReadyC
     }
 
     private void requestPermissions() {
-        ActivityCompat.requestPermissions(getActivity(),
-                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+        requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                 100);
+
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case 100: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        if (requestCode == 100) {// If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                initMap();
+                // permission was granted, yay! Do the contacts-related task you need to do.
 
-                    // permission was granted, yay! Do the contacts-related task you need to do.
+            } else {
+                Toast.makeText(getActivity(), "Action denied", Toast.LENGTH_LONG).show();
+                // permission denied, boo! Disable the
+                // functionality that depends on this permission.
+            }
+        }
+    }
 
-                } else {
-                    Toast.makeText(getActivity(),"Action denied",Toast.LENGTH_LONG).show();
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                }
+    private void startLocationService() {
+        if (getActivity() != null) {
+            Intent intent = new Intent(getActivity().getApplicationContext(), LocationService.class);
+            //ContextCompat.startForegroundService(getActivity().getBaseContext(), intent);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                getActivity().startForegroundService(intent);
                 return;
             }
+            getActivity().startService(intent);
         }
     }
 }

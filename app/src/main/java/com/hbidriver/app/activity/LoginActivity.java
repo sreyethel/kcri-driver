@@ -21,7 +21,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class LoginActivity extends AppCompatActivity implements View.OnClickListener{
+public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
     private Activity activity = LoginActivity.this;
     private EditText edEmail, edPass;
     private Button btnLogin;
@@ -32,9 +32,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        if(SharedPrefManager.getLogin(activity)){
+        if (SharedPrefManager.getLogin(activity)) {
             NextActivity.goActivityWithClearTasks(activity, new MainActivity());
-            overridePendingTransition(0,0);
+            overridePendingTransition(0, 0);
         }
 
         initGUI();
@@ -42,30 +42,30 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
-    private void initGUI(){
+    private void initGUI() {
         edEmail = findViewById(R.id.ed_email);
         edPass = findViewById(R.id.ed_pass);
         btnLogin = findViewById(R.id.btn_login);
-        spotsDialog=new SpotsDialog(activity, R.style.Custom);
+        spotsDialog = new SpotsDialog(activity, R.style.Custom);
     }
 
-    private void initEvent(){
+    private void initEvent() {
         btnLogin.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.btn_login:
-                if(!edEmail.getText().toString().equals("") && !edPass.getText().toString().equals("")){
+                if (!edEmail.getText().toString().equals("") && !edPass.getText().toString().equals("")) {
                     spotsDialog.show();
-                    RetrofitClient.getService().logInAdmin(edEmail.getText().toString(),edPass.getText().toString()).enqueue(new Callback<AdminUser>() {
+                    RetrofitClient.getService().logInAdmin(edEmail.getText().toString(), edPass.getText().toString()).enqueue(new Callback<AdminUser>() {
                         @Override
                         public void onResponse(Call<AdminUser> call, Response<AdminUser> response) {
                             AdminUser user = response.body();
                             spotsDialog.hide();
-                            if(user!=null) {
-                                if (user.getSuccess().equals("true")) {
+                            if (user != null) {
+                                if (user.isStatus()) {
                                     Gson gson = new Gson();
                                     String json = gson.toJson(user);
 
@@ -79,7 +79,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                             .setPositiveButton("OK", null)
                                             .show();
                                 }
-                            }else {
+                            } else {
                                 new AlertDialog.Builder(activity).setTitle("Note")
                                         .setMessage("Incorrect email or password")
                                         .setPositiveButton("OK", null)
@@ -90,20 +90,19 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         @Override
                         public void onFailure(Call<AdminUser> call, Throwable t) {
                             spotsDialog.hide();
-                            Toast.makeText(activity,"No internet connection...",Toast.LENGTH_LONG).show();
+                            Toast.makeText(activity, "No internet connection...", Toast.LENGTH_LONG).show();
                         }
                     });
-                }
-                else if(edEmail.getText().toString().equals("") || edPass.getText().toString().equals("")){
-                    if (edEmail.getText().toString().equals("")){
+                } else if (edEmail.getText().toString().equals("") || edPass.getText().toString().equals("")) {
+                    if (edEmail.getText().toString().equals("")) {
                         edEmail.setError("email is required");
                     }
-                    if(edPass.getText().toString().equals("")){
+                    if (edPass.getText().toString().equals("")) {
                         edPass.setError("password is required");
                     }
                 }
                 break;
-                default:
+            default:
         }
     }
 }

@@ -64,6 +64,4 @@
             android:layout_height="@dimen/dp20" />
     </LinearLayout>
 
-
-
 </android.support.constraint.ConstraintLayout>
