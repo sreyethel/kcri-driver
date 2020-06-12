@@ -37,6 +37,5 @@ public class SharedPrefManager {
     public static boolean getLogin(Activity activity){
         SharedPreferences sharedPreferences=activity.getSharedPreferences(PROJECT, Context.MODE_PRIVATE);
         return  sharedPreferences.getBoolean(IS_LOGIN,false);
-
     }
 }

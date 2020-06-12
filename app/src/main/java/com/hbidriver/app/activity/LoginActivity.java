@@ -65,7 +65,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             AdminUser user = response.body();
                             spotsDialog.hide();
                             if (user != null) {
-                                if (user.isStatus()) {
+                                if (user.isStatus() && "driver".equalsIgnoreCase(user.getRole()) ) {
                                     Gson gson = new Gson();
                                     String json = gson.toJson(user);
 
@@ -95,7 +95,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     });
                 } else if (edEmail.getText().toString().equals("") || edPass.getText().toString().equals("")) {
                     if (edEmail.getText().toString().equals("")) {
-                        edEmail.setError("email is required");
+                        edEmail.setError("username is required");
                     }
                     if (edPass.getText().toString().equals("")) {
                         edPass.setError("password is required");

@@ -24,7 +24,7 @@ import retrofit2.http.Query;
 public interface API {
 
     @POST("driver-login")
-    Call<AdminUser> logInAdmin(@Query("email") String email, @Query("password") String password);
+    Call<AdminUser> logInAdmin(@Query("username") String email, @Query("password") String password);
 
     @GET("driver-profile")
     Call<UserFromGetProfileModel> getUserProfile(@Query("user_id") int user_id, @Header("Authorization") String token);

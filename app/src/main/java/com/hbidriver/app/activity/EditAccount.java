@@ -11,8 +11,13 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.drawable.Drawable;
+import android.hardware.Camera;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -50,7 +55,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
+import java.util.Objects;
 
 import dmax.dialog.SpotsDialog;
 import okhttp3.MediaType;
@@ -62,6 +72,7 @@ import retrofit2.Response;
 
 public class EditAccount extends AppCompatActivity {
 
+    private static final String TAG = "EditAccount";
     private Toolbar toolbar;
     private Activity activity = EditAccount.this;
     private EditText edUserName, edLocation;
@@ -79,6 +90,7 @@ public class EditAccount extends AppCompatActivity {
     private SpotsDialog spotsDialog;
     private File cameraImageFile;
     private ImageView thumnail_img;
+    private Bitmap afterRotateImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,7 +130,7 @@ public class EditAccount extends AppCompatActivity {
                 userName = edUserName.getText().toString();
                 location = edLocation.getText().toString();
                 if (!userName.equals("") && !location.equals("") && uri_profile_image != null) {
-
+                    spotsDialog.show();
                     RequestBody rbUserId = createPartFromString(String.valueOf(SharedPrefManager.getUserData(activity).getUser_id()));
                     RequestBody rbUserName = createPartFromString(userName);
                     RequestBody rbLocation = createPartFromString(location);
@@ -129,7 +141,6 @@ public class EditAccount extends AppCompatActivity {
                     map.put("username", rbUserName);
                     map.put("location", rbLocation);
 
-                    spotsDialog.show();
                     RestClient.getServiceV2().updateDriverUser(image, map, "Bearer " + SharedPrefManager.getUserData(activity).getToken()).enqueue(new Callback<UserFromGetProfileModel>() {
                         @Override
                         public void onResponse(Call<UserFromGetProfileModel> call, Response<UserFromGetProfileModel> response) {
@@ -139,6 +150,9 @@ public class EditAccount extends AppCompatActivity {
 //                            String json = gson.toJson(model);
 //
 //                            SharedPrefManager.setUserData(activity, json);
+                            if (cameraImageFile.exists()) {
+                                cameraImageFile.delete();
+                            }
                             NextActivity.goActivityWithClearTasks(activity, new MainActivity());
                         }
 
@@ -158,6 +172,9 @@ public class EditAccount extends AppCompatActivity {
 //                            Gson gson = new Gson();
 //                            String json = gson.toJson(model);
 //                            SharedPrefManager.setUserData(activity, json);
+                            if (cameraImageFile.exists()) {
+                                cameraImageFile.delete();
+                            }
                             NextActivity.goActivityWithClearTasks(activity, new MainActivity());
                         }
 
@@ -185,6 +202,7 @@ public class EditAccount extends AppCompatActivity {
         btnTakePhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 final String[] options = {"Take Photo", "Choose from Gallery"};
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(activity);
@@ -298,56 +316,83 @@ public class EditAccount extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (resultCode == RESULT_OK && requestCode == gallery_pick_code) {
             uri_profile_image = data.getData();
-            saveBitmapToFile(FileUtils.getFile(activity, uri_profile_image));
+            cameraImageFile = saveBitmapToFile(FileUtils.getFile(activity, uri_profile_image));
             tvTakePhoto.setCompoundDrawablesWithIntrinsicBounds(camera, null, check, null);
         } else if (resultCode == RESULT_OK && requestCode == camera_pick_code) {
-            cameraImageFile = saveBitmapToFile(FileUtils.getFile(activity, uri_profile_image));
+            //cameraImageFile = saveBitmapToFile(activity,FileUtils.getFile( uri_profile_image));
+            //File tempFile = new File(cameraImageFile.getAbsolutePath());
+            new Handler().post(new Runnable() {
+                @Override
+                public void run() {
+                    Bitmap bitmap = null;
+                    try {
+                        bitmap = MediaStore.Images.Media.getBitmap(EditAccount.this.getContentResolver(), uri_profile_image);
+                        afterRotateImage = flipImage(bitmap);
+                        cameraImageFile = saveBitmapToFile(storeImage(afterRotateImage));
+                        tvTakePhoto.setCompoundDrawablesWithIntrinsicBounds(camera, null, check, null);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
 
-            Glide.with(this).load(cameraImageFile).asBitmap()
-
-                    .transform(new RotateTransformation(this, getRotation()))
-                    .into(new SimpleTarget<Bitmap>() {
-                        @Override
-                        public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
-                            try {
-                                File tempFile = new File(cameraImageFile.getAbsolutePath());
-                                tempFile.delete();
-                                cameraImageFile = createFile(resource);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
-
-            tvTakePhoto.setCompoundDrawablesWithIntrinsicBounds(camera, null, check, null);
         }
     }
 
-    private File createFile(Bitmap bitmap) throws IOException {
-        File f = new File(getCacheDir(), String.valueOf(System.currentTimeMillis()));
-        f.createNewFile();
+    private File storeImage(Bitmap image) {
 
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100 /*ignored for PNG*/, bos);
-        byte[] bitmapdata = bos.toByteArray();
+        String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmm", Locale.getDefault()).format(new Date());
+        String mImageName = "MI_" + timeStamp + ".png";
 
-        FileOutputStream fos = null;
+        File f = new File(Environment.getExternalStorageDirectory()
+                .toString() + "/" + mImageName);
         try {
-            fos = new FileOutputStream(f);
+            f.createNewFile();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+        }
+        FileOutputStream fOut = null;
+        try {
+            fOut = new FileOutputStream(f);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        image.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
         try {
-            fos.write(bitmapdata);
-            fos.flush();
-            fos.close();
+            if (fOut != null) {
+                fOut.flush();
+                fOut.close();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         return f;
     }
 
+    private File getOutputMediaFile() {
+        // To be safe, you should check that the SDCard is mounted
+        // using Environment.getExternalStorageState() before doing this.
+        File mediaStorageDir = new File(Environment.getExternalStorageDirectory()
+                + "/Android/data/"
+                + getApplicationContext().getPackageName()
+                + "/Files");
+
+        // This location works best if you want the created images to be shared
+        // between applications and persist after your app has been uninstalled.
+
+        // Create the storage directory if it does not exist
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                return null;
+            }
+        }
+        // Create a media file name
+        String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmm").format(new Date());
+        File mediaFile;
+        String mImageName = "MI_" + timeStamp + ".png";
+        mediaFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
+        return mediaFile;
+    }
 
     public File saveBitmapToFile(File file) {
         try {
@@ -371,7 +416,7 @@ public class EditAccount extends AppCompatActivity {
             file.createNewFile();
             FileOutputStream outputStream = new FileOutputStream(file);
 
-            selectedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+            selectedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream);
 
             return file;
         } catch (Exception e) {
@@ -380,7 +425,7 @@ public class EditAccount extends AppCompatActivity {
     }
 
     private int getRotation() {
-        if(Build.MANUFACTURER.toUpperCase().equals("SAMSUNG")) {
+        if (Build.MANUFACTURER.toUpperCase().equals("SAMSUNG")) {
             return 90;
         }
         return 0;
@@ -409,5 +454,21 @@ public class EditAccount extends AppCompatActivity {
     public boolean onSupportNavigateUp() {
         onBackPressed();
         return true;
+    }
+
+    public static Bitmap flipImage(Bitmap bitmap) {
+        //Moustafa: fix issue of image reflection due to front camera settings
+        Matrix matrix = new Matrix();
+        int rotation = fixOrientation(bitmap);
+        matrix.postRotate(rotation);
+        //matrix.preScale(-1, 1);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+    }
+
+    private static int fixOrientation(Bitmap bitmap) {
+        if (bitmap.getWidth() > bitmap.getHeight()) {
+            return 90;
+        }
+        return 0;
     }
 }

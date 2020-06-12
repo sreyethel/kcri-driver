@@ -26,7 +26,6 @@ import android.util.Log;
 
 import com.hbidriver.app.R;
 import com.hbidriver.app.Services.RestClient;
-import com.hbidriver.app.Services.RetrofitClient;
 import com.hbidriver.app.model.ResponseOnUpdateLocation;
 import com.hbidriver.app.utils.SharedPrefManager;
 
@@ -191,7 +190,6 @@ public class LocationService extends Service {
     }
 
     private void setDataToApi(Location location, int status) {
-
 
         int userId = SharedPrefManager.getUserData(getApplicationContext()).getUser_id();
         final String token = "Bearer " + SharedPrefManager.getUserData(getApplicationContext()).getToken();

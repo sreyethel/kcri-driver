@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -13,12 +14,17 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.github.javiersantos.appupdater.AppUpdaterUtils;
+import com.github.javiersantos.appupdater.enums.AppUpdaterError;
+import com.github.javiersantos.appupdater.enums.UpdateFrom;
+import com.github.javiersantos.appupdater.objects.Update;
 import com.hbidriver.app.R;
 import com.hbidriver.app.Services.RestClient;
 import com.hbidriver.app.Services.RetrofitClient;
@@ -46,6 +52,8 @@ public class MainActivity extends AppCompatActivity
     private TextView txtName, txtWebsite;
     private ImageView imageView;
     public static UserFromGetProfileModel user;
+
+    private static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +87,7 @@ public class MainActivity extends AppCompatActivity
         // load nav menu header data
         //loadNavHeader();
         loadDriverProfile();
+        showUpdate();
 
     }
 
@@ -250,5 +259,41 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
         return false;
+    }
+
+    private void showUpdate() {
+        new AppUpdaterUtils(this)
+                .setUpdateFrom(UpdateFrom.GOOGLE_PLAY)
+                .withListener(new AppUpdaterUtils.UpdateListener() {
+                    @Override
+                    public void onSuccess(Update update, Boolean isUpdateAvailable) {
+                        if(!isUpdateAvailable) {
+                            return;
+                        }
+                        AlertDialog.Builder builder=new AlertDialog.Builder(activity);
+                        builder.setTitle("Update available")
+                                .setMessage("Check out the latest version available of this app")
+                                .setPositiveButton("Update", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        final String appPackageName = getPackageName(); // getPackageName() from Context or Activity object
+                                        try {
+                                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
+                                        } catch (android.content.ActivityNotFoundException anfe) {
+                                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)));
+                                        }
+                                    }
+                                })
+                                .setNegativeButton("Cancel", null);
+                        AlertDialog alertDialog=builder.create();
+                        alertDialog.show();
+                        alertDialog.setCanceledOnTouchOutside(false);
+                    }
+
+                    @Override
+                    public void onFailed(AppUpdaterError error) {
+                        Log.d(TAG, "onFailed: " + error.toString());
+                    }
+                }).start();
     }
 }
